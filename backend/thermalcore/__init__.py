@@ -1,5 +1,15 @@
 """Backend do ThermalCore Optimizer — motor de otimização termodinâmica."""
 
+from .optimizer import (
+    CRITERIA,
+    HAVE_SCIPY,
+    OptimizationResult,
+    SweepResult,
+    boundary_thickness,
+    optimize,
+    response_payload,
+    sweep,
+)
 from .thermal_model import (
     ALUMINUM,
     Conditions,
@@ -17,6 +27,7 @@ from .thermal_model import (
 )
 
 __all__ = [
+    # thermal_model
     "ALUMINUM",
     "Conditions",
     "HeatSinkGeometry",
@@ -30,4 +41,13 @@ __all__ = [
     "fin_parameter",
     "overall_efficiency",
     "total_resistance",
+    # optimizer
+    "CRITERIA",
+    "HAVE_SCIPY",
+    "OptimizationResult",
+    "SweepResult",
+    "boundary_thickness",
+    "optimize",
+    "response_payload",
+    "sweep",
 ]

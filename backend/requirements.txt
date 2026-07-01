@@ -1,4 +1,6 @@
 # Backend do ThermalCore Optimizer
-# PR 2 (modelo térmico) depende apenas de NumPy.
-# scipy (otimização não linear) e pyserial (integração serial) entram nas PRs seguintes.
 numpy>=1.24
+# SciPy é usado no refino não linear da fronteira de viabilidade (optimizer).
+# É opcional em tempo de execução: sem ele, o refino cai numa bisseção pura.
+scipy>=1.10
+# pyserial (integração serial com a HMI) entra na PR seguinte.
