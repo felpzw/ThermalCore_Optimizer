@@ -1,0 +1,4 @@
+# Backend do ThermalCore Optimizer
+# PR 2 (modelo térmico) depende apenas de NumPy.
+# scipy (otimização não linear) e pyserial (integração serial) entram nas PRs seguintes.
+numpy>=1.24
