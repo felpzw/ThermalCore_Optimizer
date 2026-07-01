@@ -1,9 +1,9 @@
 # ThermalCore Optimizer — Backend (Motor de Otimização)
 
 Backend Python do ThermalCore Optimizer — o motor de otimização termodinâmica do
-Módulo 1. Compõe-se do **modelo térmico** (núcleo de física) e do **otimizador
-paramétrico** (varredura + filtro + função custo). A integração serial com a HMI
-chega na PR seguinte.
+Módulo 1. Compõe-se do **modelo térmico** (núcleo de física), do **otimizador
+paramétrico** (varredura + filtro + função custo) e da **ponte serial** que fecha
+o loop com a HMI (Arduino).
 
 ## Estrutura
 
@@ -12,10 +12,12 @@ backend/
 ├── thermalcore/
 │   ├── __init__.py
 │   ├── thermal_model.py   # circuito térmico, eficiência de aleta, T_chip
-│   └── optimizer.py       # varredura NumPy, filtro de viabilidade, função custo
+│   ├── optimizer.py       # varredura NumPy, filtro de viabilidade, função custo
+│   └── serial_bridge.py   # listener JSON serial (HMI <-> otimizador)
 ├── tests/
 │   ├── test_thermal_model.py
-│   └── test_optimizer.py
+│   ├── test_optimizer.py
+│   └── test_serial_bridge.py
 ├── requirements.txt
 └── README.md
 ```
@@ -54,11 +56,34 @@ varredura paramétrica vetorizada do otimizador. A função de alto nível
    `T_chip(t) = T_max` para ajustar a espessura à fronteira exata de viabilidade
    (`scipy.optimize.brentq`; sem SciPy, cai numa bisseção pura equivalente).
 
+## Integração serial (HMI ↔ backend)
+
+`serial_bridge.py` fecha o loop com o firmware: escuta os requisitos enviados
+pela HMI, roda o otimizador e devolve a geometria ótima. Protocolo (linhas
+terminadas em `\n`, 9600 baud):
+
+```
+RX (da HMI):     {"q_c":20.00,"T_max":85.00}
+TX (para a HMI): {"N":5,"t":0.5}          (t em milímetros)
+```
+
+O transporte é abstraído (`read_line`/`write_line`), então o loop `serve()` é
+testável sem hardware. O adaptador real sobre `pyserial` é criado por
+`open_serial()` (import tardio; `pyserial` opcional para o resto do backend).
+
+Rodar o listener na porta física:
+
+```bash
+cd backend
+python3 -m thermalcore.serial_bridge /dev/ttyUSB0 --baud 9600 --criterion mass
+```
+
 ## Uso
 
 ```python
 from thermalcore.thermal_model import Conditions, HeatSinkGeometry, evaluate
 from thermalcore.optimizer import optimize, response_payload
+from thermalcore.serial_bridge import process_line
 
 cond = Conditions(q_c=20.0, t_max=85.0)          # requisitos do projeto
 
@@ -69,6 +94,9 @@ print(res.t_chip, res.mass, res.feasible)
 # otimização (menor massa) -> payload {"N": .., "t": .. mm} para a HMI
 opt = optimize(cond, criterion="mass")
 print(response_payload(opt))
+
+# uma linha de request serial -> uma linha de resposta JSON
+print(process_line('{"q_c":20.0,"T_max":85.0}'))   # -> {"N":5,"t":0.5}
 ```
 
 Demonstrações rápidas:
@@ -90,15 +118,18 @@ python3 -m unittest discover -s tests -v
 
 Os testes cobrem o **modelo** (fórmulas fundamentais com valores fechados,
 invariantes físicos, viabilidade geométrica, verificação ponta-a-ponta contra
-reimplementação independente em `math` puro) e o **otimizador** (contagem da
+reimplementação independente em `math` puro), o **otimizador** (contagem da
 malha, concordância varredura vetorizada × `evaluate` escalar, seleção por
-custo, casos inviáveis, e o refino da fronteira contra uma bisseção
-independente). Rodam com ou sem SciPy instalado.
+custo, casos inviáveis, e o refino da fronteira contra uma bisseção independente)
+e a **ponte serial** (parsing do protocolo, loop de serviço com transporte fake,
+adaptador `pyserial` com duble e, quando disponível, porta loopback `loop://`
+real). Rodam com ou sem SciPy/pyserial instalados.
 
 ## Dependências
 
 - **NumPy** — varredura paramétrica (obrigatória).
 - **SciPy** — refino não linear da fronteira (opcional; há fallback puro).
+- **pyserial** — comunicação serial física com a HMI (opcional; import tardio).
 
 ```bash
 pip install -r requirements.txt
