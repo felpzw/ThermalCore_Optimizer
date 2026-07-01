@@ -62,8 +62,3 @@ O backend não apenas resolve as equações, mas atua como um assistente de proj
 
 ---
 
-## 4. Perspectivas Futuras (Módulos 2 e 3)
-
-Conforme a evolução do projeto, o sistema integrará:
-*   **Módulo 2 (Cabeamento):** Determinação de temperatura e Raio Crítico de Isolamento sob geração volumétrica com convecção e radiação simultâneas, utilizando o método de Newton-Raphson no Python[cite: 5].
-*   **Módulo 3 (Reatores Exotérmicos):** Solução de equações diferenciais de difusão de calor com condições assimétricas de contorno para localização do pico de temperatura ($dT/dx = 0$)[cite: 5].
