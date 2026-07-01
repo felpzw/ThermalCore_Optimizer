@@ -10,6 +10,13 @@ from .optimizer import (
     response_payload,
     sweep,
 )
+from .serial_bridge import (
+    SerialLineTransport,
+    open_serial,
+    parse_request,
+    process_line,
+    serve,
+)
 from .thermal_model import (
     ALUMINUM,
     Conditions,
@@ -50,4 +57,10 @@ __all__ = [
     "optimize",
     "response_payload",
     "sweep",
+    # serial_bridge
+    "SerialLineTransport",
+    "open_serial",
+    "parse_request",
+    "process_line",
+    "serve",
 ]

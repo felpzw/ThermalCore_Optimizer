@@ -3,4 +3,6 @@ numpy>=1.24
 # SciPy é usado no refino não linear da fronteira de viabilidade (optimizer).
 # É opcional em tempo de execução: sem ele, o refino cai numa bisseção pura.
 scipy>=1.10
-# pyserial (integração serial com a HMI) entra na PR seguinte.
+# pyserial: comunicação serial real com a HMI (serial_bridge). Opcional para o
+# restante do backend — importado sob demanda em open_serial().
+pyserial>=3.5
